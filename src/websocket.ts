@@ -70,6 +70,14 @@ export const setupWebSocket = (server: http.Server) => {
         const roomIndex = DB.findIndex((e) => e.room === data.room)
         let icon: Icon = "X"
         if (roomIndex !== -1) {
+          const findIsPlayer = DB[roomIndex].players.find(
+            (e) => e.nickname === data.nickname
+          )
+          if (findIsPlayer) {
+            socket.join(data.room)
+            io.to(data.room).emit("connection")
+            return io.to(data.room).emit("board", { ...DB[roomIndex] })
+          }
           if (DB[roomIndex].players.length >= 2) return
           icon = "O"
           DB[roomIndex].players.push({ nickname: data.nickname, icon })
