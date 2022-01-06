@@ -7,7 +7,7 @@ export interface Game {
   room: string
   turn: string
   players: Player[]
-  winner: string | null
+  winner: Player | null
   draw: boolean
   history: Icon[]
   status: string
