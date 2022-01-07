@@ -73,16 +73,20 @@ export const setupWebSocket = (server: http.Server) => {
           const findIsPlayer = DB[roomIndex].players.find(
             (e) => e.nickname === data.nickname
           )
+          socket.join(data.room)
           if (findIsPlayer) {
-            socket.join(data.room)
             io.to(data.room).emit("connection")
             return io.to(data.room).emit("board", { ...DB[roomIndex] })
           }
-          if (DB[roomIndex].players.length >= 2) return
+          if (DB[roomIndex].players.length >= 2) {
+            return io.to(data.room).emit("status", {
+              message: "This room is already complete",
+              type: "error",
+            })
+          }
           icon = "O"
           DB[roomIndex].players.push({ nickname: data.nickname, icon })
           DB[roomIndex].status = "started"
-          socket.join(data.room)
           io.to(data.room).emit("connection")
           return io.to(data.room).emit("board", { ...DB[roomIndex] })
         } else {
@@ -118,8 +122,13 @@ export const setupWebSocket = (server: http.Server) => {
       }
     })
 
-    socket.on("leave", (room: string) => {
-      return io.to(room).emit("leaveGame")
+    socket.on("leave", (data: { room: string; nickname: string }) => {
+      io.to(data.room).emit("status", {
+        message: `${data.nickname} left the game`,
+        type: "info",
+      })
+      io.to(data.room).emit("leaveGame")
+      return socket.leave(data.room)
     })
   })
 }
