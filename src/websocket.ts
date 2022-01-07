@@ -112,9 +112,14 @@ export const setupWebSocket = (server: http.Server) => {
           status: "started",
           board: Array(9).fill(null),
           winner: null,
+          turn: DB[roomIndex].players[0].nickname,
         }
         return io.to(room).emit("board", { ...DB[roomIndex] })
       }
+    })
+
+    socket.on("leave", (room: string) => {
+      return io.to(room).emit("leaveGame")
     })
   })
 }
